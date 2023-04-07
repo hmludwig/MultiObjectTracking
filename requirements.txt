@@ -1,0 +1,9 @@
+numpy
+pillow
+matplotlib
+open3d
+protobuf==3.20.0
+git+https://github.com/climbingdaily/pypcd #pypcd
+pycocotools
+easydict
+opencv-python

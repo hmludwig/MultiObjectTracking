@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+message Frame {
+  string id = 1;
+  repeated Camera cameras = 2;
+  repeated Lidar lidars = 3;
+}
+
+message Camera{
+    bytes data = 1;
+    int32 width = 2;
+    int32 height = 3;
+    int32 depth = 4;
+    repeated float T = 5;
+    Position pos = 6;
+    repeated CameraDetection detections = 7;
+
+    message CameraDetection{
+        string id = 1;
+        ObjectType type = 2;
+        repeated float bbox = 3; // x0,y0, width, height
+    }
+    string timestamp = 8;
+    repeated float K = 9;
+    repeated float D = 10;
+}
+
+message Lidar{
+    repeated float data = 1;
+    int32 width = 2;
+    int32 height = 3;
+    int32 channels = 4;
+    repeated float T = 5;
+    Position pos = 6;
+    repeated LidarDetection detections = 7;
+    
+    message LidarDetection
+    {
+        string id = 1;
+        ObjectType type = 2;
+        repeated float pos = 3; //x,y,z of center of object
+        repeated float rot = 4; // roll, pitch, yaw of object
+        repeated float scale = 5; //x,y,z scale of object
+    }
+    string timestamp = 8;
+}
+
+enum Position {
+    CENTER = 0;
+    FRONT_LEFT = 1;
+    FRONT_RIGHT = 2;
+    BACK_LEFT = 3;
+    BACK_RIGHT = 4;
+}
+
+enum ObjectType {
+    CAR = 0;
+    TRUCK = 1;
+    PEDESTRIAN = 2;
+    CYCLIST = 3;
+}

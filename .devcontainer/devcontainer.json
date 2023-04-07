@@ -6,7 +6,7 @@
 		// Sets the run context to one level up instead of the .devcontainer folder.
 		"context": "..",
 		// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
-		"dockerfile": "../Dockerfile_GPU"   // <--- uncomment for CPU
+		"dockerfile": "../Dockerfile_CPU"   // <--- uncomment for CPU
 		// "dockerfile": "../Dockerfile_GPU" // <--- uncomment for GPU support
 	},
 
@@ -18,9 +18,10 @@
 
 	"runArgs": ["--network=host", "--shm-size=10gb",
 				// "--gpus", "all", // <---- uncomment for GPU support
-			    "-e", "DISPLAY=${env:DISPLAY}",   // <---- uncomment for linux
-				// "-e", "DISPLAY=<windows display name>",  // <---- uncomment for windows
-				"-v", "/tmp/.X11-unix:/tmp/.X11-unix"],
+			    //"-e", "DISPLAY=${env:DISPLAY}",   // <---- uncomment for linux
+				"-e", "DISPLAY=Daniel-Zenbook",  // <---- uncomment for windows
+				//"-v", "/tmp/.X11-unix:/tmp/.X11-unix"
+			],
 				
 	"workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind",
 	"workspaceFolder": "/app",

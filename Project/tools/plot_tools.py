@@ -20,8 +20,15 @@ LABEL_DICT = {
 def plot_tracks(img, tracks, measurements, lidar_detections, camera, state=None):
     fig, (ax1, ax2) = plt.subplots(1,2)
 
+<<<<<<< Updated upstream
     camera_mtx = np.array(camera.K).reshape(3,3)
     dist = np.array(camera.D)
+=======
+    camera_mtx = np.array([[1318.51564, 0.0, 1019.62628],  # from intrinsic.yaml file
+                           [0.0, 1316.3302, 719.2797],
+                           [0.0, 0.0, 1.0]])
+    dist = np.array([-0.283517, 0.080529, 0.001032, 0.000043, 0.000000])
+>>>>>>> Stashed changes
     img1, img2 = image_tools.undistort(img, camera_mtx, dist)
 
     T = np.asarray(camera.T)
@@ -37,7 +44,10 @@ def plot_tracks(img, tracks, measurements, lidar_detections, camera, state=None)
             w = track.w
             h = track.h
             l = track.l
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
             x0 = track.x[0] - l/2
             y0 = track.x[1] + w/2
             z0 = track.x[2] - h/2
@@ -124,5 +134,9 @@ def plot_tracks(img, tracks, measurements, lidar_detections, camera, state=None)
     ax1.set_xlabel('y [m]')
     ax1.set_ylabel('x [m]')
     ax1.set_aspect('equal')
+<<<<<<< Updated upstream
     ax1.set_ylim(0, 50) 
+=======
+    ax1.set_ylim(0, 30) 
+>>>>>>> Stashed changes
     ax1.set_xlim(-10, 10)

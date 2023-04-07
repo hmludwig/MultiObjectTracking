@@ -20,7 +20,11 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
+<<<<<<< Updated upstream
   serialized_pb=_b('\n\x0b\x66rame.proto\"E\n\x05\x46rame\x12\n\n\x02id\x18\x01 \x01(\t\x12\x18\n\x07\x63\x61meras\x18\x02 \x03(\x0b\x32\x07.Camera\x12\x16\n\x06lidars\x18\x03 \x03(\x0b\x32\x06.Lidar\"\x85\x02\n\x06\x43\x61mera\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\x0c\x12\r\n\x05width\x18\x02 \x01(\x05\x12\x0e\n\x06height\x18\x03 \x01(\x05\x12\r\n\x05\x64\x65pth\x18\x04 \x01(\x05\x12\t\n\x01T\x18\x05 \x03(\x02\x12\x16\n\x03pos\x18\x06 \x01(\x0e\x32\t.Position\x12+\n\ndetections\x18\x07 \x03(\x0b\x32\x17.Camera.CameraDetection\x12\x11\n\ttimestamp\x18\x08 \x01(\t\x12\t\n\x01K\x18\t \x03(\x02\x12\t\n\x01\x44\x18\n \x03(\x02\x1a\x46\n\x0f\x43\x61meraDetection\x12\n\n\x02id\x18\x01 \x01(\t\x12\x19\n\x04type\x18\x02 \x01(\x0e\x32\x0b.ObjectType\x12\x0c\n\x04\x62\x62ox\x18\x03 \x03(\x02\"\x89\x02\n\x05Lidar\x12\x0c\n\x04\x64\x61ta\x18\x01 \x03(\x02\x12\r\n\x05width\x18\x02 \x01(\x05\x12\x0e\n\x06height\x18\x03 \x01(\x05\x12\x10\n\x08\x63hannels\x18\x04 \x01(\x05\x12\t\n\x01T\x18\x05 \x03(\x02\x12\x16\n\x03pos\x18\x06 \x01(\x0e\x32\t.Position\x12)\n\ndetections\x18\x07 \x03(\x0b\x32\x15.Lidar.LidarDetection\x12\x11\n\ttimestamp\x18\x08 \x01(\t\x1a`\n\x0eLidarDetection\x12\n\n\x02id\x18\x01 \x01(\t\x12\x19\n\x04type\x18\x02 \x01(\x0e\x32\x0b.ObjectType\x12\x0b\n\x03pos\x18\x03 \x03(\x02\x12\x0b\n\x03rot\x18\x04 \x03(\x02\x12\r\n\x05scale\x18\x05 \x03(\x02*V\n\x08Position\x12\n\n\x06\x43\x45NTER\x10\x00\x12\x0e\n\nFRONT_LEFT\x10\x01\x12\x0f\n\x0b\x46RONT_RIGHT\x10\x02\x12\r\n\tBACK_LEFT\x10\x03\x12\x0e\n\nBACK_RIGHT\x10\x04*=\n\nObjectType\x12\x07\n\x03\x43\x41R\x10\x00\x12\t\n\x05TRUCK\x10\x01\x12\x0e\n\nPEDESTRIAN\x10\x02\x12\x0b\n\x07\x43YCLIST\x10\x03\x62\x06proto3')
+=======
+  serialized_pb=_b('\n\x0b\x66rame.proto\"E\n\x05\x46rame\x12\n\n\x02id\x18\x01 \x01(\t\x12\x18\n\x07\x63\x61meras\x18\x02 \x03(\x0b\x32\x07.Camera\x12\x16\n\x06lidars\x18\x03 \x03(\x0b\x32\x06.Lidar\"\xef\x01\n\x06\x43\x61mera\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\x0c\x12\r\n\x05width\x18\x02 \x01(\x05\x12\x0e\n\x06height\x18\x03 \x01(\x05\x12\r\n\x05\x64\x65pth\x18\x04 \x01(\x05\x12\t\n\x01T\x18\x05 \x03(\x02\x12\x16\n\x03pos\x18\x06 \x01(\x0e\x32\t.Position\x12+\n\ndetections\x18\x07 \x03(\x0b\x32\x17.Camera.CameraDetection\x12\x11\n\ttimestamp\x18\x08 \x01(\t\x1a\x46\n\x0f\x43\x61meraDetection\x12\n\n\x02id\x18\x01 \x01(\t\x12\x19\n\x04type\x18\x02 \x01(\x0e\x32\x0b.ObjectType\x12\x0c\n\x04\x62\x62ox\x18\x03 \x03(\x02\"\x89\x02\n\x05Lidar\x12\x0c\n\x04\x64\x61ta\x18\x01 \x03(\x02\x12\r\n\x05width\x18\x02 \x01(\x05\x12\x0e\n\x06height\x18\x03 \x01(\x05\x12\x10\n\x08\x63hannels\x18\x04 \x01(\x05\x12\t\n\x01T\x18\x05 \x03(\x02\x12\x16\n\x03pos\x18\x06 \x01(\x0e\x32\t.Position\x12)\n\ndetections\x18\x07 \x03(\x0b\x32\x15.Lidar.LidarDetection\x12\x11\n\ttimestamp\x18\x08 \x01(\t\x1a`\n\x0eLidarDetection\x12\n\n\x02id\x18\x01 \x01(\t\x12\x19\n\x04type\x18\x02 \x01(\x0e\x32\x0b.ObjectType\x12\x0b\n\x03pos\x18\x03 \x03(\x02\x12\x0b\n\x03rot\x18\x04 \x03(\x02\x12\r\n\x05scale\x18\x05 \x03(\x02*V\n\x08Position\x12\n\n\x06\x43\x45NTER\x10\x00\x12\x0e\n\nFRONT_LEFT\x10\x01\x12\x0f\n\x0b\x46RONT_RIGHT\x10\x02\x12\r\n\tBACK_LEFT\x10\x03\x12\x0e\n\nBACK_RIGHT\x10\x04*=\n\nObjectType\x12\x07\n\x03\x43\x41R\x10\x00\x12\t\n\x05TRUCK\x10\x01\x12\x0e\n\nPEDESTRIAN\x10\x02\x12\x0b\n\x07\x43YCLIST\x10\x03\x62\x06proto3')
+>>>>>>> Stashed changes
 )
 
 _POSITION = _descriptor.EnumDescriptor(
@@ -52,8 +56,13 @@ _POSITION = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
+<<<<<<< Updated upstream
   serialized_start=618,
   serialized_end=704,
+=======
+  serialized_start=596,
+  serialized_end=682,
+>>>>>>> Stashed changes
 )
 _sym_db.RegisterEnumDescriptor(_POSITION)
 
@@ -83,8 +92,13 @@ _OBJECTTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
+<<<<<<< Updated upstream
   serialized_start=706,
   serialized_end=767,
+=======
+  serialized_start=684,
+  serialized_end=745,
+>>>>>>> Stashed changes
 )
 _sym_db.RegisterEnumDescriptor(_OBJECTTYPE)
 
@@ -186,8 +200,13 @@ _CAMERA_CAMERADETECTION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
+<<<<<<< Updated upstream
   serialized_start=278,
   serialized_end=348,
+=======
+  serialized_start=256,
+  serialized_end=326,
+>>>>>>> Stashed changes
 )
 
 _CAMERA = _descriptor.Descriptor(
@@ -253,6 +272,7 @@ _CAMERA = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+<<<<<<< Updated upstream
     _descriptor.FieldDescriptor(
       name='K', full_name='Camera.K', index=8,
       number=9, type=2, cpp_type=6, label=3,
@@ -267,6 +287,8 @@ _CAMERA = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+=======
+>>>>>>> Stashed changes
   ],
   extensions=[
   ],
@@ -280,7 +302,11 @@ _CAMERA = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=87,
+<<<<<<< Updated upstream
   serialized_end=348,
+=======
+  serialized_end=326,
+>>>>>>> Stashed changes
 )
 
 
@@ -338,8 +364,13 @@ _LIDAR_LIDARDETECTION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
+<<<<<<< Updated upstream
   serialized_start=520,
   serialized_end=616,
+=======
+  serialized_start=498,
+  serialized_end=594,
+>>>>>>> Stashed changes
 )
 
 _LIDAR = _descriptor.Descriptor(
@@ -417,8 +448,13 @@ _LIDAR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
+<<<<<<< Updated upstream
   serialized_start=351,
   serialized_end=616,
+=======
+  serialized_start=329,
+  serialized_end=594,
+>>>>>>> Stashed changes
 )
 
 _FRAME.fields_by_name['cameras'].message_type = _CAMERA

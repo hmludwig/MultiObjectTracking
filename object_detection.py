@@ -1,71 +1,39 @@
-import argparse
 import sys
 import os
-import time
 import warnings
-import zipfile
+import pickle
+from os import listdir
+from typing import Tuple
+from os.path import isfile, join
+from natsort import natsorted
+
+import cv2
 import torch
-
-from data_process.kitti_bev_utils import makeBEVMap
-
-###################################################################
-import matplotlib.pyplot as plt
-
+import numpy as np
 from PIL import Image
-import open3d as o3d
+from easydict import EasyDict as edict
 
+from SFA3D.sfa.data_process.kitti_bev_utils import makeBEVMap
 import tools.dataset_tools as dataset_tools
 from tools.frame_pb2 import Frame
 import tools.plot_tools as plot_tool
 
-from os import listdir
-from os.path import isfile, join
-from natsort import natsorted, ns
+from SFA3D.sfa.models.model_utils import create_model
+from SFA3D.sfa.utils.evaluation_utils import draw_predictions, convert_det_to_real_values
+import SFA3D.sfa.config.kitti_config as cnf
+from SFA3D.sfa.data_process.transformation import lidar_to_camera_box
+from SFA3D.sfa.utils.visualization_utils import merge_rgb_to_bev, show_rgb_image_with_boxes
+from SFA3D.sfa.data_process.kitti_data_utils import Calibration
+from SFA3D.sfa.utils.demo_utils import parse_demo_configs, do_detect, download_and_unzip, write_credit
+from SFA3D.sfa.utils.torch_utils import _sigmoid
 
-from typing import Tuple
-from easydict import EasyDict as edict
-
-import numpy as np
-from numpy.lib.function_base import percentile
-import numpy.lib.recfunctions as rf
+warnings.filterwarnings("ignore", category=UserWarning)
 
 
 def get_frame_pcl(frame_path):
     frame = dataset_tools.read_frame(frame_path)
     lidar = frame.lidars[0]
     return dataset_tools.decode_lidar(lidar)
-
-
-def get_frame_lidar(frame_path):
-    frame = dataset_tools.read_frame(frame_path)
-    lidar = frame.lidars[0]
-    return lidar.detections
-
-
-def get_filtered_lidar(lidar, boundary, labels=None):
-    minX = boundary['minX']
-    maxX = boundary['maxX']
-    minY = boundary['minY']
-    maxY = boundary['maxY']
-    minZ = boundary['minZ']
-    maxZ = boundary['maxZ']
-
-    # Remove the point out of range x,y,z
-    mask = np.where((lidar[:, 0] >= minX) & (lidar[:, 0] <= maxX)
-                    & (lidar[:, 1] >= minY) & (lidar[:, 1] <= maxY)
-                    & (lidar[:, 2] >= minZ) & (lidar[:, 2] <= maxZ))
-    lidar = lidar[mask]
-    lidar[:, 2] = lidar[:, 2] - minZ
-
-    if labels is not None:
-        label_x = (labels[:, 1] >= minX) & (labels[:, 1] < maxX)
-        label_y = (labels[:, 2] >= minY) & (labels[:, 2] < maxY)
-        label_z = (labels[:, 3] >= minZ) & (labels[:, 3] < maxZ)
-        mask_label = label_x & label_y & label_z
-        labels = labels[mask_label]
-        return lidar, labels
-    else:
-        return lidar
 
 
 def get_frame_img(frame_path):
@@ -76,44 +44,14 @@ def get_frame_img(frame_path):
     return image
 
 
-def get_xyzi_points(cloud_array, remove_nans=False):
-    '''Pulls out x, y, and z columns from the cloud recordarray, and returns
-	a 3xN matrix.
-    '''
-    # remove crap points
-    # print(cloud_array.dtype.names)
-    if remove_nans:
-        mask = np.isfinite(cloud_array[:, 0]) & np.isfinite(
-            cloud_array[:, 1]) & np.isfinite(cloud_array[:, 2]) & np.isfinite(
-                cloud_array[:, 3])
-        cloud_array = cloud_array[mask]
-
-    # pull out x, y, and z values + intensty
-    points = np.zeros(cloud_array.shape)
-    points[..., 0] = cloud_array[:, 0]
-    points[..., 1] = cloud_array[:, 1]
-    points[..., 2] = cloud_array[:, 2]
-    points[..., 3] = cloud_array[:, 3]
-
-    return points
-
-
-OUSTER_CHANNELS = [
-    'x', 'y', 'z', 'intensity', 't', 'reflectivity', 'ring', 'ambient', 'range'
-]
-
-
 def pcl_to_bev(pcl: np.ndarray, configs: edict) -> np.ndarray:
     """Computes the bev map of a given pointcloud. 
-    
     For generality, this method can return the bev map of the available 
     channels listed in '''BEVConfig.VALID_CHANNELS'''. 
-
     Parameters
     ----------
         pcl (np.ndarray): pointcloud as a numpy array of shape [n_points, m_channles] 
         configs (Dict): configuration parameters of the resulting bev_map
-
     Returns
     -------
         bev_map (np.ndarray): bev_map as numpy array of shape [len(config.channels), configs.bev_height, configs.bev_width ]
@@ -180,13 +118,11 @@ def pcl_to_bev(pcl: np.ndarray, configs: edict) -> np.ndarray:
 
     return bev_map
 
-
 def sort_and_map(pcl: np.ndarray,
                  channel_index: int,
                  return_counts: bool = False) -> Tuple[np.ndarray, np.ndarray]:
     """Function to re-arrange elements in poincloud by sorting first by x, then y, then -channel.
     This function allows users to map a pointcloud channel to a top view image (in z axis) of that channel.
-
     Parameters
     ----------
         pcl (np.ndarray): Input pointcloud of of shape [n_points, m_channles]
@@ -214,29 +150,6 @@ def sort_and_map(pcl: np.ndarray,
     return (pcl_sorted[indices], counts)
 
 
-def show_bev_map(bev_map: np.ndarray) -> None:
-    """Function to show bev_map as an RGB image
-
-    By default, the image will only show the 3 first channels of `bev_map`. 
-
-    Parameters
-    ----------
-        bev_map (np.ndarray): bev_map as numpy array of shape `[len(config.channels), configs.bev_height, configs.bev_width ]` 
-    """
-    bev_image: np.ndarray = (np.swapaxes(np.swapaxes(bev_map, 0, 1), 1, 2) *
-                             255).astype(np.uint8)
-    mask: np.ndarray = np.zeros_like(bev_image[:, :, 0])
-
-    height_image = Image.fromarray(np.dstack((bev_image[:, :, 0], mask, mask)))
-    den_image = Image.fromarray(np.dstack((mask, bev_image[:, :, 1], mask)))
-    int_image = Image.fromarray(np.dstack((mask, mask, bev_image[:, :, 2])))
-
-    int_image.show()
-    den_image.show()
-    height_image.show()
-    Image.fromarray(bev_image).show()
-
-
 configs = edict()
 configs.lims = edict()
 configs.lims.x = [0, 50]
@@ -246,46 +159,28 @@ configs.lims.intensity = [0, 100.0]
 configs.bev_height = 640
 configs.bev_width = 640
 
-mypath = "./data_2/"
+DATA_PATH = "./data_2/"
+
 onlyfiles = natsorted(
-    [mypath + f for f in listdir(mypath) if isfile(join(mypath, f))],
+    [DATA_PATH + f for f in listdir(DATA_PATH) if isfile(join(DATA_PATH, f))],
     key=lambda y: y.lower())
-lidar_detections = [get_frame_lidar(f) for f in onlyfiles]
-bev_data = [pcl_to_bev(get_frame_pcl(f), configs) for f in onlyfiles]
-img_data = [get_frame_img(f) for f in onlyfiles]
-
-###################################################################
-
-warnings.filterwarnings("ignore", category=UserWarning)
-
-import cv2
-import numpy as np
+data = [(pcl_to_bev(get_frame_pcl(f), configs), get_frame_img(f)) for f in onlyfiles]
 
 src_dir = os.path.dirname(os.path.realpath(__file__))
-while not src_dir.endswith("sfa"):
-    src_dir = os.path.dirname(src_dir)
-if src_dir not in sys.path:
-    sys.path.append(src_dir)
-
-from data_process.demo_dataset import Demo_KittiDataset
-from models.model_utils import create_model
-from utils.evaluation_utils import draw_predictions, convert_det_to_real_values
-import config.kitti_config as cnf
-from data_process.transformation import lidar_to_camera_box
-from utils.visualization_utils import merge_rgb_to_bev, show_rgb_image_with_boxes
-from data_process.kitti_data_utils import Calibration
-from utils.demo_utils import parse_demo_configs, do_detect, download_and_unzip, write_credit
-from utils.torch_utils import _sigmoid
+sys.path.append(
+    str(src_dir + '/SFA3D/sfa/')
+)
 
 if __name__ == '__main__':
     configs = parse_demo_configs()
 
     model = create_model(configs)
     print('\n\n' + '-*=' * 30 + '\n\n')
-    assert os.path.isfile(configs.pretrained_path), "No file at {}".format(
+    pretrained_path = src_dir + '/SFA3D/checkpoints/fpn_resnet_18/fpn_resnet_18_epoch_300.pth'
+    assert os.path.isfile(pretrained_path), "No file at {}".format(
         configs.pretrained_path)
     model.load_state_dict(
-        torch.load(configs.pretrained_path, map_location='cpu'))
+        torch.load(pretrained_path, map_location='cpu'))
     print('Loaded weights from {}\n'.format(configs.pretrained_path))
 
     configs.device = torch.device(
@@ -295,11 +190,9 @@ if __name__ == '__main__':
 
     out_cap = None
 
-    demo_dataset = Demo_KittiDataset(configs)
-
     frame_det = {}
     with torch.no_grad():
-        for i, (img, bev_map) in enumerate(zip(img_data, bev_data)):
+        for i, (bev_map, img) in enumerate(data):
 
             bev_map = torch.from_numpy(bev_map).to(configs.device,
                                                    non_blocking=True).float()
@@ -321,7 +214,7 @@ if __name__ == '__main__':
             bev_map = cv2.rotate(bev_map, cv2.ROTATE_180)
 
             img_bgr = cv2.cvtColor(np.float32(img), cv2.COLOR_RGB2BGR)
-            calib = Calibration(configs.calib_path)
+            calib = Calibration(src_dir + '/SFA3D/dataset/kitti/demo/calib.txt')
             kitti_dets = convert_det_to_real_values(detections)
 
             if len(kitti_dets) > 0:
@@ -337,9 +230,7 @@ if __name__ == '__main__':
             if out_cap is None:
                 out_cap_h, out_cap_w = out_img.shape[:2]
                 fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-                out_path = os.path.join(
-                    configs.results_dir,
-                    '{}_front.avi'.format(configs.foldername))
+                out_path= './output_video.avi'
                 print('Create video writer at {}'.format(out_path))
                 out_cap = cv2.VideoWriter(out_path, fourcc, 30,
                                           (out_cap_w, out_cap_h))
@@ -350,6 +241,5 @@ if __name__ == '__main__':
         out_cap.release()
     cv2.destroyAllWindows()
 
-import pickle
-with open('saved_dictionary.pkl', 'wb') as f:
+with open('./output_data.pkl', 'wb') as f:
     pickle.dump(frame_det, f)

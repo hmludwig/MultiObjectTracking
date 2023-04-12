@@ -14,22 +14,15 @@ message Camera{
     repeated float T = 5;
     Position pos = 6;
     repeated CameraDetection detections = 7;
-<<<<<<< Updated upstream
 
-=======
-    
->>>>>>> Stashed changes
     message CameraDetection{
         string id = 1;
         ObjectType type = 2;
         repeated float bbox = 3; // x0,y0, width, height
     }
     string timestamp = 8;
-<<<<<<< Updated upstream
     repeated float K = 9;
     repeated float D = 10;
-=======
->>>>>>> Stashed changes
 }
 
 message Lidar{

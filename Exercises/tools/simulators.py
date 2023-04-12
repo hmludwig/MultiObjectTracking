@@ -14,6 +14,8 @@ class CarSimulator(object):
         self.process_std = np.copy(process_std)
         self.process_std = self.process_std.astype(float)
         self.state_dim = self.x.shape[0] if len(self.x.shape) > 1 else 1
+        self.gts = None
+        self.measurements = None
 
     def move(self, dt=1.0):
         dx = self.vel+np.random.randn()*self.process_std
@@ -32,7 +34,8 @@ class CarSimulator(object):
             gts[i,:] = self.move(dt).flatten()
             measurements[i,:] = self.measure_pos().flatten()
 
-        return gts, measurements
+        self.gts = gts
+        self.measurements = measurements
 
 
 if __name__ == '__main__':

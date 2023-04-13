@@ -23,7 +23,7 @@ class CarSimulator(object):
         return np.copy(self.x)
 
     def measure_pos(self):
-        return np.copy(self.x + np.random.randn()*self.meas_std)
+        return np.copy(self.x + np.random.randn(*self.x.shape))
     
     def simulate_steps(self, N=5, dt=1):
         

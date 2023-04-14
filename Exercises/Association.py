@@ -19,17 +19,27 @@ class Association:
             track = track_list[i]
             for j in range(len(meas_list)):
                 meas = meas_list[j]
-                dist = self.Mahalanobis(track, meas, track.P)
+                dist = self.Mahalanobis(track, meas, track.P, meas.H)
                 # gating
-                if dist < chi2.ppf(0.95, df=2):
+                if dist < 30:
                     self.association_matrix[i,j] = dist
         return self.association_matrix
         
-    def Mahalanobis(self, track, meas, P):
+    def Mahalanobis(self, track, meas, P, H):
         # calc Mahalanobis distance
-        H = np.matrix([[1, 0, 0, 0],
-                       [0, 1, 0, 0]]) 
-        gamma = meas - H@track.state[-1]
-        S = H@P@H.transpose()
+        if meas.kind == 'lidar':
+            meas_vec = np.array(meas.data.pos).reshape(3)
+        elif meas.kind == 'cam':
+            meas_vec = (np.array(meas.data.bbox)[:2]).reshape(2)
+        if meas.kind == 'cam':
+            p_x, p_y, p_z = track.kf.x[:3]
+            gamma = meas_vec - H(p_x, p_y, p_z-2.5,
+                         np.array(meas.misc["T"]).reshape((4,4)),np.array(meas.misc["K"]).reshape((3,3))).reshape(2)
+            H_j = meas.misc["H_j"](p_x, p_y, p_z-2.5,
+                         np.array(meas.misc["T"]).reshape((4,4)),np.array(meas.misc["K"]).reshape((3,3)))
+            S = H_j@P@H_j.transpose()
+        else:
+            gamma = meas_vec - (H@track.kf.x).reshape(3)
+            S = H@P@H.transpose()
         MHD = gamma@np.linalg.inv(S)@gamma.T # Mahalanobis distance formula
         return MHD
